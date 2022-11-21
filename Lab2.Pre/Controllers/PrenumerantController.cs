@@ -44,5 +44,23 @@ namespace Lab2.Pre.Controllers
                 return errormsg;
             }
         }
+
+        [HttpPost(Name = "InsertPrenumerant")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        public string PostPrenumerant([FromBody] Pren pren)
+        {
+            PrenMetoder pm = new PrenMetoder();
+            string error = "";
+            int i = pm.InsertPrenumerant(pren, out error);
+            if(error == null)
+            {
+                return i.ToString();
+
+            } else
+            {
+                return error;
+            }
+            
+        }
     }
 }

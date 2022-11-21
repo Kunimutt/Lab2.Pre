@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
 using System;
+using System.Xml.Linq;
 
 namespace Lab2.Pre.Models
 {
@@ -159,7 +160,7 @@ namespace Lab2.Pre.Models
             dbConnection.ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=DBPren;Integrated Security=True;Pooling=False"; // <- gå in på properties på databasen, under connection string
 
             // SQL-sträng
-            String updateSQL = "UPDATE [tbl_prenumerant] SET [pr_fnamn] = @fnamn, [pr_efternamn] = @efternamn, [pr_telefonnr] = @telefonnr, [pr_ort] = @ort, [pr_postnr] = @postnr WHERE [pr_prennr] = @id";
+            String updateSQL = "UPDATE [tbl_prenumerant] SET [pr_fnamn] = @fnamn, [pr_efternamn] = @efternamn, [pr_telefonnr] = @telefonnr, [pr_ort] = @ort, [pr_postnr] = @postnr, [pr_utadress] = @utadress WHERE [pr_prennr] = @id";
 
             // Lägg till en user
             SqlCommand dbCommand = new SqlCommand(updateSQL, dbConnection);
@@ -170,6 +171,7 @@ namespace Lab2.Pre.Models
             dbCommand.Parameters.Add("ort", SqlDbType.NVarChar, 50).Value = p.pr_ort;
             dbCommand.Parameters.Add("postnr", SqlDbType.Int).Value = p.pr_postnr;
             dbCommand.Parameters.Add("id", SqlDbType.Int).Value = p.pr_prennr;
+            dbCommand.Parameters.Add("utadress", SqlDbType.NVarChar, 50).Value = p.pr_utadress;
 
             // Exekvera SQL-strängen
             try
@@ -184,6 +186,54 @@ namespace Lab2.Pre.Models
             catch (Exception e)
             {
                 error = e.Message;
+                return 0;
+            }
+            finally
+            {
+                dbConnection.Close();
+            }
+        }
+
+        public int InsertPrenumerant(Pren pren, out string errormsg)
+        {
+            // Skapa SQL-connection
+            SqlConnection dbConnection = new SqlConnection();
+
+
+
+            // Koppling mot SQL Server
+            dbConnection.ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=DBPren;Integrated Security=True;Pooling=False"; // <- gå in på properties på databasen, under connection string
+
+
+
+            // SQL-sträng
+            String insertSQL = "INSERT INTO [tbl_prenumerant] ([pr_prennr], [pr_personnr], [pr_fnamn], [pr_efternamn], [pr_telefonnr], [pr_utadress], [pr_postnr], [pr_ort]) values (@prennr, @personnr, @fnamn, @efternamn, @telefonnr, @utadress, @postnr, @ort)";
+                 
+            // Lägg till en user
+            SqlCommand dbCommand = new SqlCommand(insertSQL, dbConnection);
+            dbCommand.Parameters.Add("prennr", SqlDbType.Int).Value = pren.pr_prennr;
+            dbCommand.Parameters.Add("personnr", SqlDbType.NVarChar, 15).Value = pren.pr_personnr;
+            dbCommand.Parameters.Add("fnamn", SqlDbType.NVarChar, 50).Value = pren.pr_fnamn;
+            dbCommand.Parameters.Add("efternamn", SqlDbType.NVarChar, 50).Value = pren.pr_efternamn;
+            dbCommand.Parameters.Add("telefonnr", SqlDbType.NVarChar, 50).Value = pren.pr_telefonnr;
+            dbCommand.Parameters.Add("ort", SqlDbType.NVarChar, 50).Value = pren.pr_ort;
+            dbCommand.Parameters.Add("postnr", SqlDbType.Int).Value = pren.pr_postnr;            
+            dbCommand.Parameters.Add("utadress", SqlDbType.NVarChar).Value = pren.pr_utadress;
+                        
+
+            // Exekvera SQL-strängen
+            try
+            {
+                dbConnection.Open();
+                int i = 0;
+                i = dbCommand.ExecuteNonQuery();
+                if (i == 1) { errormsg = ""; }
+                else { errormsg = "Det skapades inte en prenumerant i databasen."; }
+                return (i);
+            }
+            catch (Exception e)
+            {
+                errormsg = e.Message;
                 return 0;
             }
             finally
